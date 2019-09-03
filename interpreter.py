@@ -2,39 +2,53 @@ import sys
 
 
 def main():
-    register = ['000'] * 10
-    ram = [sys.stdin.readlines() for i in range(15)]
-    ram += ['000'] * (1000 - len(ram))
+    register = [0] * 10
+    ram = [0] * 1000
+    for i in range(1000):
+        n = sys.stdin.readline()
+        if len(n) < 3:
+            break
+        ram[i] = int(n)
     steps = 0
     pos = 0
 
     while True:
         cmd = ram[pos]
         steps += 1
-        print(steps)
+        print("pos", pos)
+        print("steps", steps)
+        print("cmd", cmd)
+        input()
 
-        if cmd[0] == "1":
+        a, b, c = cmd // 100, (cmd // 10) % 10, cmd % 10
+        if a == 1 or pos == 999:
             print(steps)
             return
-        if cmd[0] == "2":
-            d, n
-            register[int(cmd[1])] = "00" + cmd[2]
-        if cmd[0] == "3":
-            register[int(cmd[1])] = str(int(register[int(cmd[1])]) + int(cmd[2]))[:3]
-        if cmd[0] == "4":
-            register[int(cmd[1])] = str(int(register[int(cmd[1])]) * int(cmd[2]))[:3]
-        if cmd[0] == "5":
-            register[int(cmd[1])] = register[int(cmd[2])]
-        if cmd[0] == "6":
-            register[int(cmd[1])] = str(int(register[int(cmd[1])]) + int(register[int(cmd[2])]))[:3]
-        if cmd[0] == "7":
-            register[int(cmd[1])] = str(int(register[int(cmd[1])]) * int(register[int(cmd[2])]))[:3]
-        if cmd[0] == "8":
-            register[int(cmd[1])] = ram[int(register[int(cmd[2])])]
-        if cmd[0] == "9":
-            ram[int(register[int(cmd[2])])] = register[int(cmd[1])]
-        if cmd[0] == "0" and cmd[2] != "0":
-            pos = int(register[int(cmd[1])])
+        if a == 2:
+            register[b] = c
+        if a == 3:
+            register[b] += c
+            register[b] %= 1000
+        if a == 4:
+            register[b] *= c
+            register[b] %= 1000
+        if a == 5:
+            register[b] = register[c]
+        if a == 6:
+            register[b] += register[c]
+            register[b] %= 1000
+        if a == 7:
+            register[b] *= register[c]
+            register[b] %= 1000
+        if a == 8:
+            register[b] = ram[register[c]]
+        if a == 9:
+            ram[register[c]] = register[b]
+        if a == 0 and c:
+            print(register)
+            pos = register[register[b]] - 1
+
+        pos += 1
 
 
 main()
