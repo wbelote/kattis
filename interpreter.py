@@ -1,6 +1,3 @@
-# Reaches time limit on test case 1. I must be misunderstanding the instructions, because it seems like the first test
-# case should go back and forth between RAM positions 9 and 10 forever.
-
 import sys
 
 
@@ -39,7 +36,7 @@ def main():
             register[b] = ram[register[c]]
         if a == 9:
             ram[register[c]] = register[b]
-        if a == 0 and c:
+        if a == 0 and register[c] != 0:
             pos = register[b]
         else:
             pos += 1

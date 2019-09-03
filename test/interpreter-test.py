@@ -43,12 +43,13 @@ def main():
             register[b] = ram[register[c]]
         if a == 9:
             ram[register[c]] = register[b]
-        if a == 0 and c:
-            pos = register[b] - 1
+        if a == 0 and register[c] != 0:
+            pos = register[b]
+        else:
+            pos += 1
+
         print(register)
         input()
-
-        pos += 1
 
 
 main()
