@@ -1,19 +1,23 @@
-# Reaches time limit on test case 1. I must be misunderstanding the instructions, because it seems like the first test
-# case should go back and forth between RAM positions 9 and 10 forever.
-
 import sys
 
 
 def main():
     register = [0] * 10
-    lines = sys.stdin.readlines()
-    ram = [int(n) for n in lines]
+    ram = [0] * 1000
+    for i in range(1000):
+        n = sys.stdin.readline()
+        if len(n) < 3:
+            break
+        ram[i] = int(n)
     steps = 0
     pos = 0
 
     while True:
         cmd = ram[pos]
         steps += 1
+        print("pos", pos)
+        print("steps", steps)
+        print("cmd", cmd)
 
         a, b, c = cmd // 100, (cmd // 10) % 10, cmd % 10
         if a == 1 or pos == 999:
@@ -40,9 +44,11 @@ def main():
         if a == 9:
             ram[register[c]] = register[b]
         if a == 0 and c:
-            pos = register[b]
-        else:
-            pos += 1
+            pos = register[b] - 1
+        print(register)
+        input()
+
+        pos += 1
 
 
 main()
