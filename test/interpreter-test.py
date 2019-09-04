@@ -20,7 +20,7 @@ def main():
         print("cmd", cmd)
 
         a, b, c = cmd // 100, (cmd // 10) % 10, cmd % 10
-        if a == 1 or pos == 999:
+        if a == 1 or pos == 999 or steps == 10000:
             print(steps)
             return
         if a == 2:
