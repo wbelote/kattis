@@ -1,3 +1,7 @@
+# Will Belote
+# Eight Queens (3.2)
+# https://open.kattis.com/problems/8queens
+
 import sys
 
 
@@ -8,6 +12,10 @@ def main():
         for j in range(8):
             if line[j] == "*":
                 queens.append([j, i])
+
+    if len(queens) != 8:
+        print("invalid")
+        return
 
     for queen in queens:
         others = queens[:]
