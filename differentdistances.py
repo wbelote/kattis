@@ -1,3 +1,7 @@
+# Will Belote
+# Different Distances (1.6)
+# https://open.kattis.com/problems/differentdistances
+
 import sys
 
 

@@ -1,3 +1,7 @@
+# Will Belote
+# Black Friday (2.2)
+# https://open.kattis.com/problems/blackfriday
+
 import sys
 
 
