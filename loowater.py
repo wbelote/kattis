@@ -5,12 +5,15 @@ def calc_price(heads, knights):
     if len(knights) < len(heads):
         return -1
     total = 0
-    for head in heads:
-        while knights[0] < head:
-            knights.pop(0)
+    while heads:
+        while min(knights) < min(heads):
+            knights.remove(min(knights))
             if len(knights) < len(heads):
                 return -1
-        total += knights.pop(0)
+        total += min(knights)
+        knights.remove(min(knights))
+        heads.remove(min(heads))
+
     return total
 
 
@@ -23,8 +26,6 @@ def main():
 
         heads = [int(sys.stdin.readline()) for i in range(n)]
         knights = [int(sys.stdin.readline()) for i in range(m)]
-        heads.sort()
-        knights.sort()
 
         total = calc_price(heads, knights)
         if total == -1:
