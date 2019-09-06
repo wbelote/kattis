@@ -1,0 +1,5 @@
+https://open.kattis.com/problems/transportationplanning
+https://open.kattis.com/problems/kamp
+https://open.kattis.com/problems/greatgeekgameshow
+https://open.kattis.com/problems/clockconstruction
+https://open.kattis.com/problems/videopoker
