@@ -36,7 +36,7 @@ def main():
 
     # go through all possible paths
     best_time = dist(a, b)
-    for p in itper(range(n + 1), n):
+    for p in itper(range(n + 1), n + 1):
         path = [a]
         for x in p:
             if x == n:
@@ -48,7 +48,6 @@ def main():
         time = calc_time(path)
         if time < best_time:
             best_time = time
-            print(path, time)
 
     print(best_time)
 
