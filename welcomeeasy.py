@@ -2,7 +2,7 @@ import sys
 
 
 def count_in(sub, string):
-    if len(sub) == len(string):
+    if len(sub) >= len(string):
         return int(sub == string)
     if sub[0] not in string:
         return 0
