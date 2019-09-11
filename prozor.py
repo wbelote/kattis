@@ -14,8 +14,7 @@ def main():
     max_y = 0
     for y in range(r - k + 1):
         for x in range(s - k + 1):
-            line_count = [line[x+1:x+k-1].count("*") for line in picture[y+1:y+k-1]]
-            count = sum(line_count)
+            count = sum([line[x+1:x+k-1].count("*") for line in picture[y+1:y+k-1]])
             # print(x, y, count)
             # print(x+1, x+k-1, y+1, y+k-1)
             # print([line[x+1:x+k-1] for line in picture[y+1:y+k-1]])
