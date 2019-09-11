@@ -2,10 +2,12 @@ import sys
 
 
 def count_in(sub, string):
-    if len(sub) >= len(string):
-        return int(sub == string)
-    if sub[0] not in string:
+    if not sub or sub[0] not in string:
         return 0
+    if len(sub) >= len(string):
+        return int(sub in string)
+    if len(sub) == 1:
+        return string.count(sub)
     start = string.index(sub[0]) + 1
     return count_in(sub[1:], string[start:]) + count_in(sub, string[start:])
 
