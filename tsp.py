@@ -1,6 +1,7 @@
 import random
 import sys
 import time
+import math
 
 start = time.time()
 
@@ -15,9 +16,11 @@ if n == 1:
     sys.exit(0)
 stop = 1.95 - n / 200000
 points = tuple(tuple(float(x) for x in sys.stdin.readline().split()) for i in range(n))
+mid = (sum([x for x, y in points]) / n, sum([y for x, y in points]) / n)
+tans = [[math.atan2(points[i][1]-mid[1], points[i][0]-mid[0]), i] for i in range(n)]
+tans.sort()
 
-path = list(range(n))
-random.shuffle(path)
+path = [i for t, i in tans]
 path_points = tuple(points[x] for x in path)
 best_dist = sum([dist(path_points[i], path_points[i + 1]) for i in range(n - 1)])
 best_path = tuple(path[:])
@@ -42,8 +45,6 @@ while True:
     if time.time() - start >= stop:
         for p in best_path:
             print(p)
-        print(time.time() - start)
-        print(loops)
+        # print(time.time() - start)
+        # print(loops)
         break
-
-
