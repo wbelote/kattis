@@ -4,7 +4,7 @@ import math
 
 def ssd(b, n):
     total = 0
-    digits = math.ceil(math.log(n, b))
+    digits = int(math.log(n, b)) + 1
     for i in range(digits):
         d = (n // b ** i) % b
         total += d ** 2
