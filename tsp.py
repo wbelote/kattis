@@ -1,4 +1,4 @@
-import itertools
+import random
 import sys
 import time
 
@@ -16,17 +16,28 @@ if n == 1:
 stop = 1.95 - n / 200000
 points = tuple(tuple(float(x) for x in sys.stdin.readline().split()) for i in range(n))
 
-best_dist = sum([dist(points[i], points[i - 1]) for i in range(n)])
-best_path = tuple(range(n))
+path = list(range(n))
+random.shuffle(path)
+path_points = tuple(points[x] for x in path)
+best_dist = sum([dist(path_points[i], path_points[i + 1]) for i in range(n - 1)])
+best_path = tuple(path[:])
 
 loops = 0
-for path in itertools.permutations(range(n)):
+while True:
     loops += 1
+
+    swap = [random.choice(range(n)) for i in range(2)]
+    while swap[0] == swap[1]:
+        swap = [random.choice(range(n)) for i in range(2)]
+    swap.sort()
+    path = list(best_path[:])
+    path[min(swap)], path[max(swap)] = path[max(swap)], path[min(swap)]
+
     path_points = tuple(points[x] for x in path)
     path_dist = sum([dist(path_points[i], path_points[i + 1]) for i in range(n - 1)])
     if path_dist < best_dist:
         best_dist = path_dist
-        best_path = path
+        best_path = tuple(path[:])
 
     if time.time() - start >= stop:
         for p in best_path:
@@ -34,3 +45,5 @@ for path in itertools.permutations(range(n)):
         print(time.time() - start)
         print(loops)
         break
+
+
