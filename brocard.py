@@ -1,15 +1,47 @@
-import math
 import sys
 
 
-def angle2(mid, p1, p2):
-    a1 = math.atan2(p1[1] - mid[1], p1[0] - mid[0])
-    a2 = math.atan2(p2[1] - mid[1], p2[0] - mid[0])
-    return angle_diff(a1, a2)
+def slope(a, b):
+    return (b[1] - a[1]) / (b[0] - a[0])
 
 
-def angle_diff(a1, a2):
-    return min([abs(a1 - a2), 2 * math.pi - abs(a1 - a2)])
+def intersect(m1, b1, m2, b2):
+    x = (b2 - b1) / (m1 - m2)
+    y = m1 * x + b1
+    return [x, y]
+
+
+def line_mb(a, b):
+    m = slope(a, b)
+    b = a[1] - m * a[0]
+    return [m, b]
+
+
+def ext(a, b, c):
+    midpoint = [(a[i] + b[i]) / 2 for i in range(2)]
+    if a[1] == b[1]:
+        end_m = -1 / slope(b, c)
+        end_b = b[1] - end_m * b[0]
+        x = midpoint[0]
+        y = end_m * x + end_b
+        return [x, y]
+    if b[1] == c[1]:
+        mid_m = -1 / slope(a, b)
+        mid_b = midpoint[1] - mid_m * midpoint[0]
+        x = b[0]
+        y = mid_m * x + mid_b
+        return [x, y]
+    if a[0] == b[0]:
+        mid_m = 0
+    else:
+        mid_m = -1 / slope(a, b)
+    mid_b = midpoint[1] - mid_m * midpoint[0]
+    if b[0] == c[0]:
+        end_m = 0
+    else:
+        end_m = -1 / slope(b, c)
+    end_b = b[1] - end_m * b[0]
+    return intersect(mid_m, mid_b, end_m, end_b)
 
 
 def main():
@@ -18,49 +50,25 @@ def main():
         line = sys.stdin.readline().split()
         k = int(line[0])
         a, b, c = [(float(line[i]), float(line[i + 1])) for i in (1, 3, 5)]
-        unzip = [[x for x, y in (a, b, c)], [y for x, y in (a, b, c)]]
-        min_x, max_x, min_y, max_y = min(unzip[0]), max(unzip[0]), min(unzip[1]), max(unzip[1])
 
-        # Use the mean of the corner points to make initial guess,
-        # calculate relevant angles and their mean
-        point = [sum(val) / 3 for val in unzip]
-        angles = [angle2(a, point, b), angle2(b, point, c), angle2(c, point, a)]
-        mean = sum(angles) / 3
-        coef = 1
+        ext_ab = ext(a, b, c)
+        ext_bc = ext(b, c, a)
 
-        while max(angles) - min(angles) > 0.000001:
-            # Update the guess point based on the errors
-            # For each point, move the guess perpendicular to the line between that point and the guess
-            # by an amount proportional to how far that angle is from the mean angle.
+        if ext_ab[0] == ext_bc[0]:
+            x = ext_ab[0] * 2 - b[0]
+            y = b[1]
+        elif ext_ab[1] == ext_bc[1]:
+            x = b[0]
+            y = ext_ab[1] * 2 - b[1]
+        else:
+            mirror_m, mirror_b = line_mb(ext_ab, ext_bc)
+            perp_m = -1 / slope(ext_ab, ext_bc)
+            perp_b = b[1] - perp_m * b[0]
+            mid_x, mid_y = intersect(mirror_m, mirror_b, perp_m, perp_b)
+            x = mid_x * 2 - b[0]
+            y = mid_y * 2 - b[1]
 
-            # dirs: direction to move the guess for each point
-            # errs: difference between each angle and the mean angle
-            # diff: change in the guess
-            dirs = [[point[1] - x[1], x[0] - point[0]] for x in (a, b, c)]
-            errs = [(angle - mean) * abs(angle - mean) for angle in angles]
-            x_diff = [dirs[i][0] * errs[i] for i in range(3)]
-            y_diff = [dirs[i][1] * errs[i] for i in range(3)]
-
-            # print()
-            # print("point", point)
-            # print("angles", angles, mean)
-            # print("errs", errs)
-            # print("dirs", dirs)
-            # print("x diff", x_diff, sum(x_diff))
-            # print("y diff", y_diff, sum(y_diff))
-
-            point[0] += sum(x_diff) * 2 ** coef
-            point[1] += sum(y_diff) * 2 ** coef
-            angles = [angle2(a, point, b), angle2(b, point, c), angle2(c, point, a)]
-            mean = sum(angles) / 3
-
-            if not (min_x <= point[0] <= max_x and min_y <= point[1] <= max_y):
-                coef -= 1
-                point = [sum(val) / 3 for val in unzip]
-                angles = [angle2(a, point, b), angle2(b, point, c), angle2(c, point, a)]
-                mean = sum(angles) / 3
-
-        print(k, point[0], point[1])
+        print(k, x, y)
 
 
 main()
