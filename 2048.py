@@ -2,12 +2,14 @@ import sys
 
 
 def compress(x):
-    out = []
-    for i in range(4):
-        if out and x[i] == out[-1]:
-            out[-1] += x[i]
-        elif x[i]:
-            out.append(x[i])
+    out = x[:]
+    while 0 in out:
+        out.remove(0)
+    i = 1
+    while i < len(out):
+        if out[i] == out[i-1]:
+            out[i-1] += out.pop(i)
+        i += 1
 
     return out + [0] * (4 - len(out))
 
