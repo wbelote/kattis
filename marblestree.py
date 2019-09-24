@@ -5,6 +5,13 @@ Each child with a net deficit will need n moves from that child
 moves = sum for each child:
     abs(vertices - marbles) + downstream moves
 """
+
+"""
+This works great on the sample input, but gives a wrong answer on the second.
+
+I think there must be some unusual case that I've forgotten to account for. I thought it might be trees with one node,
+already solved trees, or deeper trees, but all of those seem to work.
+"""
 import sys
 
 
