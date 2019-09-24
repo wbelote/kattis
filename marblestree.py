@@ -46,7 +46,14 @@ def main():
     n = int(sys.stdin.readline())
     while n:
         vertices = [[]] + [[int(x) for x in sys.stdin.readline().split()] for i in range(n)]
-        tree = Node(vertices)
+        children = set()
+        for i in range(n):
+            child = vertices[i+1][3:]
+            for c in child:
+                children.add(c)
+        total = set(range(1, n + 1))
+        top = total - children
+        tree = Node(vertices, vin=top.pop())
         print(tree.count_moves())
 
         n = int(sys.stdin.readline())
