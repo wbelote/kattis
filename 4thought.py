@@ -1,28 +1,19 @@
 import sys
 
 
-def search(n):
-    ops = [" + ", " - ", " * ", " / "]
-
-    for op1 in ops:
-        for op2 in ops:
-            for op3 in ops:
-                exp = "4" + op1 + "4" + op2 + "4" + op3 + "4"
-                val = None
-                exec(f"val = {exp}")
-                print(f"val = {exp}")
-                print(exp, val)
-                if val == n:
-                    return exp
-
+def four(x):
+    ops = ["+", "-", "*", "//"]
+    for a in ops:
+        for b in ops:
+            for c in ops:
+                exp = f"4 {a} 4 {b} 4 {c} 4"
+                res = int(eval(exp))
+                if res == x:
+                    return f"{exp} = {res}".replace("//", "/")
     return "no solution"
 
 
-def main():
+m = int(sys.stdin.readline())
+for i in range(m):
     n = int(sys.stdin.readline())
-    for i in range(n):
-        line = int(sys.stdin.readline())
-        print(search(line))
-
-
-main()
+    print(four(n))
