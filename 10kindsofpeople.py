@@ -14,38 +14,50 @@ def neighbors(x, y, max_x, max_y):
     return out
 
 
-def search(q, layout, r, c):
-    start = layout[q[0]][q[1]]
-    finish = layout[q[2]][q[3]]
-    if start != finish:
-        return "neither"
-
-    zone = {q[:2]}
-    edge = [q[:2]]
-    while True:
-        if q[-2:] in edge:
-            return ["binary", "decimal"][int(start)]
-        edge_new = []
-        for pos in edge:
-            for n in neighbors(pos[0], pos[1], r, c):
-                if layout[n[0]][n[1]] == start and n not in zone:
-                    edge_new.append(n)
-                    zone.add(n)
-        if not edge_new:
-            return "neither"
-        edge = edge_new
-
-
 def main():
     rows, cols = [int(x) for x in sys.stdin.readline().split()]
     layout = [sys.stdin.readline().rstrip() for i in range(rows)]
 
     n = int(sys.stdin.readline())
-    queries = [tuple([int(x) - 1 for x in sys.stdin.readline().split()]) for i in range(n)]
+    queries = [[int(x) - 1 for x in sys.stdin.readline().split()] for i in range(n)]
+
+    zone_map = [[cols * r + c for c in range(cols)] for r in range(rows)]
+    zone_list = [{(i // cols, i % cols)} for i in range(rows*cols)]
+
+    for r in range(rows):
+        for c in range(cols):
+            char = layout[r][c]
+            zone = zone_map[r][c]
+            adjacent = neighbors(r, c, rows, cols)
+            adj_match = []
+            zones = [zone]
+            for loc in adjacent:
+                if layout[loc[0]][loc[1]] == char:
+                    adj_match.append(loc)
+                    zones.append(zone_map[loc[0]][loc[1]])
+            new = min(zones)
+            for z in zones:
+                print(z)
+                members = zone_list[z]
+                for m in members:
+                    print(m)
+                    zone_map[m[0]][m[1]] = new
+                zone_list[new] |= zone_list[z]
+                zone_list[z] -= zone_list[new]
+
+    active = {}
+    for i, z in enumerate(zone_list):
+        if z:
+            active[i] = len(active)
+
+    for r in range(rows):
+        print(" ".join([str(active[x]) for x in zone_map[r]]))
 
     for q in queries:
-        is_path = search(q, layout, rows, cols)
-        print(is_path)
+        if zone_map[q[0]][q[1]] == zone_map[q[2]][q[3]]:
+            print(["binary", "decimal"][int(layout[q[0]][q[1]])])
+        else:
+            print("neither")
 
 
 if __name__ == '__main__':
