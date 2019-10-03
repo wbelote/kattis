@@ -1,61 +1,70 @@
 import sys
 
 
-def neighbors(x, y, max_x, max_y):
-    out = tuple()
-    if x > 0:
-        out = out + ((x - 1, y),)
-    if x < max_x - 1:
-        out = out + ((x + 1, y),)
-    if y > 0:
-        out = out + ((x, y - 1),)
-    if y < max_y - 1:
-        out = out + ((x, y + 1),)
+def neighbors(pos, r, c):
+    out = (pos,)
+    if pos // c > 0:
+        out += (pos - c,)
+    if pos // c < r - 1:
+        out += (pos + c,)
+    if pos % c > 0:
+        out += (pos - 1,)
+    if pos % c < c - 1:
+        out += (pos + 1,)
     return out
 
 
 def main():
     rows, cols = [int(x) for x in sys.stdin.readline().split()]
-    layout = [sys.stdin.readline().rstrip() for i in range(rows)]
+    kind_map = ""
+    for r in range(rows):
+        kind_map += sys.stdin.readline().rstrip()
 
     n = int(sys.stdin.readline())
-    queries = [[int(x) - 1 for x in sys.stdin.readline().split()] for i in range(n)]
+    queries = [[int(x) - 1 for x in sys.stdin.readline().split()] for _ in range(n)]
 
-    zone_map = [[cols * r + c for c in range(cols)] for r in range(rows)]
-    zone_list = [{(i // cols, i % cols)} for i in range(rows*cols)]
+    zone = [0] * rows * cols
+    max_zone = 0
+    actual = [0]
 
-    for r in range(rows):
-        for c in range(cols):
-            char = layout[r][c]
-            zone = zone_map[r][c]
-            adjacent = neighbors(r, c, rows, cols)
-            adj_match = []
-            zones = [zone]
-            for loc in adjacent:
-                if layout[loc[0]][loc[1]] == char:
-                    adj_match.append(loc)
-                    zones.append(zone_map[loc[0]][loc[1]])
-            new = min(zones)
-            for z in zones:
-                print(z)
-                members = zone_list[z]
-                for m in members:
-                    print(m)
-                    zone_map[m[0]][m[1]] = new
-                zone_list[new] |= zone_list[z]
-                zone_list[z] -= zone_list[new]
+    for pos in range(rows * cols):
+        paths = [n for n in neighbors(pos, rows, cols) if kind_map[n] == kind_map[pos]]
+        path_zones = {zone[p] for p in paths if zone[p]}
+        if not path_zones:
+            max_zone += 1
+            actual.append(max_zone)
+            for p in paths:
+                zone[p] = max_zone
+        else:
+            new = min(path_zones)
+            while new != actual[new]:
+                new = actual[new]
+            for p in paths:
+                if zone[p] != 0:
+                    actual[zone[p]] = new
+                zone[p] = new
 
-    active = {}
-    for i, z in enumerate(zone_list):
-        if z:
-            active[i] = len(active)
+    update = [actual[x] for x in actual]
+    while actual != update:
+        actual = update
+        update = [actual[x] for x in actual]
+    actual = update
 
-    for r in range(rows):
-        print(" ".join([str(active[x]) for x in zone_map[r]]))
+    # print()
+    # for r in range(rows):
+    #     for c in range(cols):
+    #         print(chr(actual[zone[r * cols + c]] + 32), end=" ")
+    #         # print(actual[zone[r * cols + c]], end=" ")
+    #     print()
+    # print()
+    # print(actual)
+    # print()
 
     for q in queries:
-        if zone_map[q[0]][q[1]] == zone_map[q[2]][q[3]]:
-            print(["binary", "decimal"][int(layout[q[0]][q[1]])])
+        start = q[0] * cols + q[1]
+        end = q[2] * cols + q[3]
+        if actual[zone[start]] == actual[zone[end]]:
+            print(["binary", "decimal"][int(kind_map[start])])
         else:
             print("neither")
 
