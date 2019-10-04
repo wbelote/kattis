@@ -1,19 +1,78 @@
 import time
 
 start_time = time.time()
+splits = [[], [], [],]
 
 
-def neighbors(pos, r, c, layout):
-    out = (pos,)
-    if pos // c > 0 and layout[pos - c] == layout[pos]:
-        out += (pos - c,)
-    if pos // c < r - 1 and layout[pos + c] == layout[pos]:
-        out += (pos + c,)
-    if pos % c > 0 and layout[pos - 1] == layout[pos]:
-        out += (pos - 1,)
-    if pos % c < c - 1 and layout[pos - 1] == layout[pos]:
-        out += (pos + 1,)
-    return out
+class Layout:
+    def __init__(self, rows, cols, val_map):
+        self.map = val_map
+        self.rows = rows
+        self.cols = cols
+
+        self.zone = [0] * rows * cols
+        self.zone[0] = 1
+        self.max_zone = 1
+        self.eq = [0, 1]
+        self.top = {1}
+
+    def update(self, pos):
+        start = time.time()
+
+        adj = pos - self.cols
+        if pos // self.cols > 0 and self.map[adj] == self.map[pos]:
+            if self.zone[adj] and self.zone[pos]:
+                self.merge(self.zone[adj], self.zone[pos])
+            elif self.zone[adj]:
+                self.zone[pos] = self.zone[adj]
+            elif self.zone[pos]:
+                self.zone[adj] = self.zone[pos]
+
+        adj = pos + self.cols
+        if pos // self.cols < self.rows - 1 and self.map[adj] == self.map[pos]:
+            if self.zone[adj] and self.zone[pos]:
+                self.merge(self.zone[adj], self.zone[pos])
+            elif self.zone[adj]:
+                self.zone[pos] = self.zone[adj]
+            elif self.zone[pos]:
+                self.zone[adj] = self.zone[pos]
+
+        adj = pos - 1
+        if pos % self.cols > 0 and self.map[adj] == self.map[pos]:
+            if self.zone[adj] and self.zone[pos]:
+                self.merge(self.zone[adj], self.zone[pos])
+            elif self.zone[adj]:
+                self.zone[pos] = self.zone[adj]
+            elif self.zone[pos]:
+                self.zone[adj] = self.zone[pos]
+
+        adj = pos + 1
+        if pos % self.cols < self.cols - 1 and self.map[adj] == self.map[pos]:
+            if self.zone[adj] and self.zone[pos]:
+                self.merge(self.zone[adj], self.zone[pos])
+            elif self.zone[adj]:
+                self.zone[pos] = self.zone[adj]
+            elif self.zone[pos]:
+                self.zone[adj] = self.zone[pos]
+
+        splits[0] += [time.time() - start]
+
+    def merge(self, a, b):
+        start = time.time()
+        if a < b:
+            self.eq[b] = self.get_top(a)
+            self.top.remove(b)
+        elif b < a:
+            self.eq[a] = self.get_top(b)
+            self.top.remove(a)
+        splits[1] += [time.time() - start]
+
+    def get_top(self, val):
+        start = time.time()
+        while val not in self.top:
+            val = self.eq[val]
+        splits[2] += [time.time() - start]
+        return val
 
 
 def main():
@@ -26,38 +85,13 @@ def main():
     n = 0
     queries = [[int(x) - 1 for x in f.readline().split()] for _ in range(n)]
 
-    zone = [0] * rows * cols
-    zone[0] = 1
-    max_zone = 1
-    actual = [0, 1]
+    layout = Layout(rows, cols, kind_map)
+    for i in range(rows * cols):
+        layout.update(i)
 
-    print(f"entering main loop, t = {time.time() - start_time}")
-    splits = [time.time()]
-    for pos in range(rows * cols):
-        paths = neighbors(pos, rows, cols, kind_map)
-        splits += [time.time()]
-        path_zones = {actual[zone[p]] for p in paths if zone[p]}
-        splits += [time.time()]
-        if not path_zones:
-            max_zone += 1
-            actual.append(max_zone)
-            for p in paths:
-                zone[p] = max_zone
-        else:
-            new = min(path_zones)
-            while new != actual[new]:
-                new = actual[new]
-            for p in paths:
-                if zone[p] != 0:
-                    actual[zone[p]] = new
-                zone[p] = new
-        splits += [time.time()]
-
-    update = [actual[x] for x in actual]
-    while actual != update:
-        actual = update
-        update = [actual[x] for x in actual]
-    actual = update
+    names = ["update", "merge", "get top"]
+    for i in range(3):
+        print(f"{names[i]}: n={len(splits[i])}, total={sum(splits[i])}")
 
     # print()
     # for r in range(rows):
@@ -72,16 +106,15 @@ def main():
     for q in queries:
         start = q[0] * cols + q[1]
         end = q[2] * cols + q[3]
-        if actual[zone[start]] == actual[zone[end]]:
+        if layout.get_top(start) == layout.get_top(end):
             print(["binary", "decimal"][int(kind_map[start])])
         else:
             print("neither")
 
-    diff = [splits[i] - splits[i-1] for i in range(1, len(splits))]
-    a = sum(diff[0::3])
-    b = sum(diff[1::3])
-    c = sum(diff[2::3])
-    print(a, b, c)
+    # diff = [splits[i] - splits[i - 1] for i in range(1, len(splits))]
+    # a = sum(diff[0::2])  # 2.29
+    # b = sum(diff[1::2])
+    # print(a, b)
 
 
 if __name__ == '__main__':
