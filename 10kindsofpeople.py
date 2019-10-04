@@ -1,15 +1,15 @@
 import sys
 
 
-def neighbors(pos, r, c):
+def neighbors(pos, r, c, layout):
     out = (pos,)
-    if pos // c > 0:
+    if pos // c > 0 and layout[pos - c] == layout[pos]:
         out += (pos - c,)
-    if pos // c < r - 1:
+    if pos // c < r - 1 and layout[pos + c] == layout[pos]:
         out += (pos + c,)
-    if pos % c > 0:
+    if pos % c > 0 and layout[pos - 1] == layout[pos]:
         out += (pos - 1,)
-    if pos % c < c - 1:
+    if pos % c < c - 1 and layout[pos - 1] == layout[pos]:
         out += (pos + 1,)
     return out
 
@@ -28,8 +28,8 @@ def main():
     actual = [0]
 
     for pos in range(rows * cols):
-        paths = [n for n in neighbors(pos, rows, cols) if kind_map[n] == kind_map[pos]]
-        path_zones = {zone[p] for p in paths if zone[p]}
+        paths = neighbors(pos, rows, cols, kind_map)
+        path_zones = {actual[zone[p]] for p in paths if zone[p]}
         if not path_zones:
             max_zone += 1
             actual.append(max_zone)
