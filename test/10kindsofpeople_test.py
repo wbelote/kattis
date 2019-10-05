@@ -29,12 +29,11 @@ class Queue:
 
 
 class Map:
-    def __init__(self, data, graph, dim):
+    def __init__(self, data, dim):
         self.data = data
         self.rows = dim[0]
         self.cols = dim[1]
-
-        self.graph = graph
+        self.edges = set()
 
         self.visited = {}
         self.visited_all = set()
@@ -66,10 +65,32 @@ class Map:
                 out = int(self.data[start]) + 1
             self.visited_all.add(node)
             self.zone_map[node] = zone
-            # here to end: 1.6
-            for adj in self.graph[node]:
-                if adj not in queue.seen:
-                    queue.enq(adj)
+            splits[0].append(time.time())
+            adj = node - self.cols
+            if {node, adj} not in self.edges and node // self.cols > 0 and adj not in queue.seen and self.data[adj] == self.data[node]:
+                queue.enq(adj)
+            else:
+                self.edges.add((node, adj))
+                self.edges.add((adj, node))
+            adj = node + self.cols
+            if {node, adj} not in self.edges and node // self.cols < self.rows - 1 and adj not in queue.seen and self.data[adj] == self.data[node]:
+                queue.enq(adj)
+            else:
+                self.edges.add((node, adj))
+                self.edges.add((adj, node))
+            adj = node - 1
+            if {node, adj} not in self.edges and node % self.cols > 0 and adj not in queue.seen and self.data[adj] == self.data[node]:
+                queue.enq(adj)
+            else:
+                self.edges.add((node, adj))
+                self.edges.add((adj, node))
+            adj = node + 1
+            if {node, adj} not in self.edges and node % self.cols < self.cols - 1 and adj not in queue.seen and self.data[adj] == self.data[node]:
+                queue.enq(adj)
+            else:
+                self.edges.add((node, adj))
+                self.edges.add((adj, node))
+            splits[1].append(time.time())
         return out
 
 
@@ -79,20 +100,7 @@ def main():
     kind_map = ""
     for r in range(rows):
         kind_map += f.readline().rstrip()
-
-    splits[0].append(time.time())
-    graph = {}
-    for i in range(rows * cols):
-        graph[i] = []
-        if i % cols and kind_map[i] == kind_map[i - 1]:
-            graph[i].append(i - 1)
-            graph[i - 1].append(i)
-        if i // cols and kind_map[i] == kind_map[i - cols]:
-            graph[i].append(i - cols)
-            graph[i - cols].append(i)
-    splits[1].append(time.time())
-
-    area = Map(kind_map, graph, [rows, cols])
+    area = Map(kind_map, [rows, cols])
 
     n = int(f.readline())
     queries = [[int(x) - 1 for x in f.readline().split()] for _ in range(n)]
@@ -111,5 +119,4 @@ def main():
 if __name__ == '__main__':
     main()
     print(time.time() - start_time)
-    # current total: 2.7
     print(sum(splits[1]) - sum(splits[0]))
