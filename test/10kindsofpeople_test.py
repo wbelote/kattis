@@ -4,7 +4,7 @@ start_time = time.time()
 splits = [[], []]
 
 
-class Queue:
+class Stack:
     def __init__(self):
         self.data = []
         self.start = 0
@@ -19,8 +19,8 @@ class Queue:
     def deq(self):
         if self.is_empty:
             return None
-        out = self.data[self.start]
-        self.start += 1
+        self.end -= 1
+        out = self.data[self.end]
         return out
 
     @property
@@ -33,7 +33,6 @@ class Map:
         self.data = data
         self.rows = dim[0]
         self.cols = dim[1]
-        self.edges = set()
 
         self.visited = {}
         self.visited_all = set()
@@ -57,7 +56,7 @@ class Map:
         out = 0
         zone = self.max_zone
         self.max_zone += 1
-        queue = self.visited[zone] = Queue()
+        queue = self.visited[zone] = Stack()
         queue.enq(start)
         while not queue.is_empty:
             node = queue.deq()
@@ -65,31 +64,19 @@ class Map:
                 out = int(self.data[start]) + 1
             self.visited_all.add(node)
             self.zone_map[node] = zone
-            splits[0].append(time.time())
             adj = node - self.cols
-            if (node, adj) not in self.edges and node // self.cols > 0 and adj not in queue.seen and self.data[adj] == self.data[node]:
+            splits[0].append(time.time())
+            if node // self.cols > 0 and adj not in queue.seen and self.data[adj] == self.data[node]:
                 queue.enq(adj)
-            else:
-                self.edges.add((node, adj))
-                self.edges.add((adj, node))
             adj = node + self.cols
-            if (node, adj) not in self.edges and node // self.cols < self.rows - 1 and adj not in queue.seen and self.data[adj] == self.data[node]:
+            if node // self.cols < self.rows - 1 and adj not in queue.seen and self.data[adj] == self.data[node]:
                 queue.enq(adj)
-            else:
-                self.edges.add((node, adj))
-                self.edges.add((adj, node))
             adj = node - 1
-            if (node, adj) not in self.edges and node % self.cols > 0 and adj not in queue.seen and self.data[adj] == self.data[node]:
+            if node % self.cols > 0 and adj not in queue.seen and self.data[adj] == self.data[node]:
                 queue.enq(adj)
-            else:
-                self.edges.add((node, adj))
-                self.edges.add((adj, node))
             adj = node + 1
-            if (node, adj) not in self.edges and node % self.cols < self.cols - 1 and adj not in queue.seen and self.data[adj] == self.data[node]:
+            if node % self.cols < self.cols - 1 and adj not in queue.seen and self.data[adj] == self.data[node]:
                 queue.enq(adj)
-            else:
-                self.edges.add((node, adj))
-                self.edges.add((adj, node))
             splits[1].append(time.time())
         return out
 

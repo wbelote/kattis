@@ -1,28 +1,24 @@
 import sys
 
 
-class Queue:
+class Stack:
     def __init__(self):
         self.data = []
-        self.start = 0
-        self.end = 0
         self.seen = set()
 
     def enq(self, val):
         self.data.append(val)
         self.seen.add(val)
-        self.end += 1
 
     def deq(self):
         if self.is_empty:
             return None
-        out = self.data[self.start]
-        self.start += 1
+        out = self.data.pop()
         return out
 
     @property
     def is_empty(self):
-        return self.start == self.end
+        return not self.data
 
 
 class Map:
@@ -53,7 +49,7 @@ class Map:
         out = 0
         zone = self.max_zone
         self.max_zone += 1
-        queue = self.visited[zone] = Queue()
+        queue = self.visited[zone] = Stack()
         queue.enq(start)
         while not queue.is_empty:
             node = queue.deq()
