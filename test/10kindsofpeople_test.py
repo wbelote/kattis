@@ -1,93 +1,72 @@
-import time, random
+import time
 
 start_time = time.time()
 splits = [[], []]
 
 
-class Stack:
-    def __init__(self):
-        self.data = []
-        self.start = 0
-        self.end = 0
-        self.seen = set()
+class Node:
+    def __init__(self, q, rows, cols):
+        self.rows = rows
+        self.cols = cols
+        self.r = q[0]
+        self.c = q[1]
+        self.id = self.r * cols + self.c
+        self.dist = abs(self.r - q[2]) + abs(self.c - q[3])
 
-    def enq(self, val):
-        self.data.append(val)
-        self.seen.add(val)
-        self.end += 1
+    def adj(self, dr, dc, end):
+        return Node([self.r + dr, self.c + dc] + end, self.rows, self.cols)
 
-    def deq(self):
-        if self.is_empty:
-            return None
-        self.end -= 1
-        out = self.data[self.end]
-        return out
+    def val(self, data):
+        return data[self.r][self.c]
 
-    @property
-    def is_empty(self):
-        return self.start == self.end
+    def __lt__(self, other):
+        return self.dist > other.dist
+
+    def __str__(self):
+        return f"({self.r}, {self.c})"
 
 
-class Map:
-    def __init__(self, data, dim):
-        self.data = data
-        self.rows = dim[0]
-        self.cols = dim[1]
+def search(data, q, rows, cols):
+    end = q[2:]
+    if data[q[0]][q[1]] != data[q[2]][q[3]]:
+        return -1
+    frontier = [Node(q, rows, cols)]
+    visited = {frontier[0].id}
+    while frontier:
+        pos = frontier.pop()
+        if pos.r == q[2] and pos.c == q[3]:
+            return int(pos.val(data))
 
-        self.visited = {}
-        self.visited_all = set()
-        self.zone_map = {}
-        self.max_zone = 0
-
-    def match(self, query):
-        start = query[0] * self.cols + query[1]
-        end = query[2] * self.cols + query[3]
-        if self.data[start] != self.data[end]:
-            return 0
-        seen = [start in self.visited_all, end in self.visited_all]
-        if seen[0] and seen[1]:
-            return (self.zone_map[start] == self.zone_map[end]) * (int(self.data[start]) + 1)
-        elif seen[1] or seen[0]:
-            return 0
-        else:
-            return self.search(start, end)
-
-    def search(self, start, end):
-        out = 0
-        zone = self.max_zone
-        self.max_zone += 1
-        queue = self.visited[zone] = Stack()
-        queue.enq(start)
-        while not queue.is_empty:
-            node = queue.deq()
-            if node == end:
-                out = int(self.data[start]) + 1
-            self.visited_all.add(node)
-            self.zone_map[node] = zone
-            adj = node - self.cols
-            splits[0].append(time.time())
-            if node // self.cols > 0 and adj not in queue.seen and self.data[adj] == self.data[node]:
-                queue.enq(adj)
-            adj = node + self.cols
-            if node // self.cols < self.rows - 1 and adj not in queue.seen and self.data[adj] == self.data[node]:
-                queue.enq(adj)
-            adj = node - 1
-            if node % self.cols > 0 and adj not in queue.seen and self.data[adj] == self.data[node]:
-                queue.enq(adj)
-            adj = node + 1
-            if node % self.cols < self.cols - 1 and adj not in queue.seen and self.data[adj] == self.data[node]:
-                queue.enq(adj)
-            splits[1].append(time.time())
-        return out
+        if pos.r:
+            adj = pos.adj(-1, 0, end)
+            if adj.id not in visited and adj.val(data) == pos.val(data):
+                frontier.append(adj)
+            visited.add(adj.id)
+        if pos.c:
+            adj = pos.adj(0, -1, end)
+            if adj.id not in visited and adj.val(data) == pos.val(data):
+                frontier.append(adj)
+            visited.add(adj.id)
+        if pos.r < rows - 1:
+            adj = pos.adj(1, 0, end)
+            if adj.id not in visited and adj.val(data) == pos.val(data):
+                frontier.append(adj)
+            visited.add(adj.id)
+        if pos.c < cols - 1:
+            adj = pos.adj(0, 1, end)
+            if adj.id not in visited and adj.val(data) == pos.val(data):
+                frontier.append(adj)
+            visited.add(adj.id)
+        frontier.sort()
+    return -1
 
 
 def main():
     f = open("map.txt", "r")
     rows, cols = [int(x) for x in f.readline().split()]
-    kind_map = ""
+    kind_map = []
     for r in range(rows):
-        kind_map += f.readline().rstrip()
-    area = Map(kind_map, [rows, cols])
+        kind_map += [f.readline().rstrip()]
 
     n = int(f.readline())
     queries = [[int(x) - 1 for x in f.readline().split()] for _ in range(n)]
@@ -97,9 +76,9 @@ def main():
         if i in {0, 1, 2, 4, 8, 16, 32, 64, 128, 256, 512}:
             print(i)
         i += 1
-        match = area.match(q)
-        if match:
-            print(["neither", "binary", "decimal"][match])
+        match = search(kind_map, q, rows, cols)
+        if match >= 0:
+            print(["binary", "decimal", "neither"][match])
     f.close()
 
 
