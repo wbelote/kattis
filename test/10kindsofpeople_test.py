@@ -67,25 +67,25 @@ class Map:
             self.zone_map[node] = zone
             splits[0].append(time.time())
             adj = node - self.cols
-            if {node, adj} not in self.edges and node // self.cols > 0 and adj not in queue.seen and self.data[adj] == self.data[node]:
+            if (node, adj) not in self.edges and node // self.cols > 0 and adj not in queue.seen and self.data[adj] == self.data[node]:
                 queue.enq(adj)
             else:
                 self.edges.add((node, adj))
                 self.edges.add((adj, node))
             adj = node + self.cols
-            if {node, adj} not in self.edges and node // self.cols < self.rows - 1 and adj not in queue.seen and self.data[adj] == self.data[node]:
+            if (node, adj) not in self.edges and node // self.cols < self.rows - 1 and adj not in queue.seen and self.data[adj] == self.data[node]:
                 queue.enq(adj)
             else:
                 self.edges.add((node, adj))
                 self.edges.add((adj, node))
             adj = node - 1
-            if {node, adj} not in self.edges and node % self.cols > 0 and adj not in queue.seen and self.data[adj] == self.data[node]:
+            if (node, adj) not in self.edges and node % self.cols > 0 and adj not in queue.seen and self.data[adj] == self.data[node]:
                 queue.enq(adj)
             else:
                 self.edges.add((node, adj))
                 self.edges.add((adj, node))
             adj = node + 1
-            if {node, adj} not in self.edges and node % self.cols < self.cols - 1 and adj not in queue.seen and self.data[adj] == self.data[node]:
+            if (node, adj) not in self.edges and node % self.cols < self.cols - 1 and adj not in queue.seen and self.data[adj] == self.data[node]:
                 queue.enq(adj)
             else:
                 self.edges.add((node, adj))
