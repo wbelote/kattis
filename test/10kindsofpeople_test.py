@@ -1,134 +1,106 @@
-import time
+import time, random
 
 start_time = time.time()
-splits = [[], [], [],]
+splits = [[], []]
 
 
-class Layout:
-    def __init__(self, rows, cols, val_map):
-        self.map = val_map
-        self.rows = rows
-        self.cols = cols
+class Queue:
+    def __init__(self):
+        self.data = []
+        self.start = 0
+        self.end = 0
 
-        self.zone = [0] * rows * cols
-        self.zone[0] = 1
-        self.max_zone = 1
-        self.eq = [0, 1]
-        self.top = {1}
+    def enq(self, val):
+        self.data.append(val)
+        self.end += 1
 
-    def update(self, pos):
-        start = time.time()
+    def deq(self):
+        if self.is_empty:
+            return None
+        out = self.data[self.start]
+        self.start += 1
+        return out
 
-        adj = pos - self.cols
-        if pos // self.cols > 0 and self.map[adj] == self.map[pos]:
-            if self.zone[adj] and self.zone[pos]:
-                self.merge(self.zone[adj], self.zone[pos])
-            elif self.zone[adj]:
-                self.zone[pos] = self.zone[adj]
-            elif self.zone[pos]:
-                self.zone[adj] = self.zone[pos]
+    @property
+    def is_empty(self):
+        return self.start == self.end
 
-        adj = pos + self.cols
-        if pos // self.cols < self.rows - 1 and self.map[adj] == self.map[pos]:
-            if self.zone[adj] and self.zone[pos]:
-                self.merge(self.zone[adj], self.zone[pos])
-            elif self.zone[adj]:
-                self.zone[pos] = self.zone[adj]
-            elif self.zone[pos]:
-                self.zone[adj] = self.zone[pos]
 
-        adj = pos - 1
-        if pos % self.cols > 0 and self.map[adj] == self.map[pos]:
-            if self.zone[adj] and self.zone[pos]:
-                self.merge(self.zone[adj], self.zone[pos])
-            elif self.zone[adj]:
-                self.zone[pos] = self.zone[adj]
-            elif self.zone[pos]:
-                self.zone[adj] = self.zone[pos]
+class Map:
+    def __init__(self, data, dim):
+        self.data = data
+        self.rows = dim[0]
+        self.cols = dim[1]
 
-        adj = pos + 1
-        if pos % self.cols < self.cols - 1 and self.map[adj] == self.map[pos]:
-            if self.zone[adj] and self.zone[pos]:
-                self.merge(self.zone[adj], self.zone[pos])
-            elif self.zone[adj]:
-                self.zone[pos] = self.zone[adj]
-            elif self.zone[pos]:
-                self.zone[adj] = self.zone[pos]
+        self.visited = {}
+        self.visited_all = set()
+        self.zone_map = {}
+        self.max_zone = 0
 
-        splits[0] += [time.time() - start]
+    def match(self, query):
+        start = query[0] * self.cols + query[1]
+        end = query[2] * self.cols + query[3]
+        if self.data[start] != self.data[end]:
+            return 0
+        seen = [start in self.visited_all, end in self.visited_all]
+        if seen[0] and seen[1]:
+            return (self.zone_map[start] == self.zone_map[end]) * (int(self.data[start]) + 1)
+        elif seen[1] or seen[0]:
+            return 0
+        else:
+            return self.search(start, end)
 
-    def merge(self, a, b):
-        start = time.time()
-        if a < b:
-            self.eq[b] = self.get_top(a)
-            self.top.remove(b)
-        elif b < a:
-            self.eq[a] = self.get_top(b)
-            self.top.remove(a)
-        splits[1] += [time.time() - start]
-
-    def get_top(self, val):
-        start = time.time()
-        while val not in self.top:
-            val = self.eq[val]
-        splits[2] += [time.time() - start]
-        return val
+    def search(self, start, end):
+        splits[0].append(time.time())
+        out = 0
+        zone = self.max_zone
+        self.max_zone += 1
+        queue = self.visited[zone] = Queue()
+        queue.enq(start)
+        while not queue.is_empty:
+            node = queue.deq()
+            if node == end:
+                out = int(self.data[start]) + 1
+            self.visited_all.add(node)
+            self.zone_map[node] = zone
+            adj = node - self.cols
+            if node // self.cols > 0 and adj not in queue.data and self.data[adj] == self.data[node]:
+                queue.enq(adj)
+            adj = node + self.cols
+            if node // self.cols < self.rows - 1 and adj not in queue.data and self.data[adj] == self.data[node]:
+                queue.enq(adj)
+            adj = node - 1
+            if node % self.cols > 0 and adj not in queue.data and self.data[adj] == self.data[node]:
+                queue.enq(adj)
+            adj = node + 1
+            if node % self.cols < self.cols - 1 and adj not in queue.data and self.data[adj] == self.data[node]:
+                queue.enq(adj)
+        splits[1].append(time.time())
+        return out
 
 
 def main():
-    rows, cols = 1000, 1000
     f = open("map.txt", "r")
+    rows, cols = [int(x) for x in f.readline().split()]
     kind_map = ""
     for r in range(rows):
-        kind_map += f.readline()
+        kind_map += f.readline().rstrip()
+    area = Map(kind_map, [rows, cols])
 
-    n = 0
+    n = int(f.readline())
     queries = [[int(x) - 1 for x in f.readline().split()] for _ in range(n)]
 
-    layout = Layout(rows, cols, kind_map)
-    for i in range(rows * cols):
-        layout.update(i)
-
-    names = ["update", "merge", "get top"]
-    for i in range(3):
-        print(f"{names[i]}: n={len(splits[i])}, total={sum(splits[i])}")
-
-    # print()
-    # for r in range(rows):
-    #     for c in range(cols):
-    #         print(chr(actual[zone[r * cols + c]] + 32), end=" ")
-    #         # print(actual[zone[r * cols + c]], end=" ")
-    #     print()
-    # print()
-    # print(actual)
-    # print()
-
+    i = 0
     for q in queries:
-        start = q[0] * cols + q[1]
-        end = q[2] * cols + q[3]
-        if layout.get_top(start) == layout.get_top(end):
-            print(["binary", "decimal"][int(kind_map[start])])
-        else:
-            print("neither")
-
-    # diff = [splits[i] - splits[i - 1] for i in range(1, len(splits))]
-    # a = sum(diff[0::2])  # 2.29
-    # b = sum(diff[1::2])
-    # print(a, b)
+        print(i)
+        i += 1
+        match = area.match(q)
+        if match:
+            print(["neither", "binary", "decimal"][match])
+    f.close()
 
 
 if __name__ == '__main__':
     main()
     print(time.time() - start_time)
-
-# import random
-#
-# out = "1000 1000\n"
-# for i in range(1000):
-#     for j in range(1000):
-#         out += random.choice("01")
-#     out += "\n"
-# out += "0\n"
-#
-# with open("map.txt", "w") as f:
-#     f.write(out)
+    print(sum(splits[1]) - sum(splits[0]))
