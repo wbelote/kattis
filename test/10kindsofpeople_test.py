@@ -9,9 +9,11 @@ class Queue:
         self.data = []
         self.start = 0
         self.end = 0
+        self.seen = set()
 
     def enq(self, val):
         self.data.append(val)
+        self.seen.add(val)
         self.end += 1
 
     def deq(self):
@@ -51,7 +53,6 @@ class Map:
             return self.search(start, end)
 
     def search(self, start, end):
-        splits[0].append(time.time())
         out = 0
         zone = self.max_zone
         self.max_zone += 1
@@ -64,18 +65,19 @@ class Map:
             self.visited_all.add(node)
             self.zone_map[node] = zone
             adj = node - self.cols
-            if node // self.cols > 0 and adj not in queue.data and self.data[adj] == self.data[node]:
+            splits[0].append(time.time())
+            if node // self.cols > 0 and adj not in queue.seen and self.data[adj] == self.data[node]:
                 queue.enq(adj)
             adj = node + self.cols
-            if node // self.cols < self.rows - 1 and adj not in queue.data and self.data[adj] == self.data[node]:
+            if node // self.cols < self.rows - 1 and adj not in queue.seen and self.data[adj] == self.data[node]:
                 queue.enq(adj)
             adj = node - 1
-            if node % self.cols > 0 and adj not in queue.data and self.data[adj] == self.data[node]:
+            if node % self.cols > 0 and adj not in queue.seen and self.data[adj] == self.data[node]:
                 queue.enq(adj)
             adj = node + 1
-            if node % self.cols < self.cols - 1 and adj not in queue.data and self.data[adj] == self.data[node]:
+            if node % self.cols < self.cols - 1 and adj not in queue.seen and self.data[adj] == self.data[node]:
                 queue.enq(adj)
-        splits[1].append(time.time())
+            splits[1].append(time.time())
         return out
 
 
