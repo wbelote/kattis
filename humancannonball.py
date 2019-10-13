@@ -1,23 +1,17 @@
-import sys, math
-from itertools import permutations as itper
+import sys
 
 
 def dist(a, b):
     dx = abs(a[0] - b[0])
     dy = abs(a[1] - b[1])
-    return math.sqrt(dx ** 2 + dy ** 2)
+    return (dx ** 2 + dy ** 2) ** 0.5
 
 
-def calc_time(path):
-    total = dist(path[0], path[1]) / 5
-    for i in range(2, len(path)):
-        d = dist(path[i - 1], path[i])
-        if d <= 30:
-            total += d / 5
-        else:
-            total += 2
-            total += abs(d - 50) / 5
-    return total
+def time(a, b):
+    d = dist(a, b)
+    if d <= 30:
+        return d / 5
+    return 2 + abs(50 - d) / 5
 
 
 def main():
@@ -33,23 +27,22 @@ def main():
     for i in range(n):
         line = sys.stdin.readline().split()
         cannons.append([float(x) for x in line])
+    cannons.append(b)
 
-    # go through all possible paths
-    best_time = dist(a, b)
-    for p in itper(range(n + 1), n + 1):
-        path = [a]
-        for x in p:
-            if x == n:
-                path.append(b)
-                break
-            else:
-                path.append(cannons[x])
-
-        time = calc_time(path)
-        if time < best_time:
-            best_time = time
-
-    print(best_time)
+    # Dijkstra
+    dists = [time(a, c) for c in cannons] + [time(a, b)]
+    unseen = list(range(n + 1))
+    while True:
+        new = dists.index(min(dists))
+        if new == n:
+            print(dists[n])
+            return
+        unseen.remove(new)
+        for loc in unseen:
+            t = time(cannons[new], cannons[loc])
+            if dists[new] + t < dists[loc]:
+                dists[loc] = t
 
 
-main()
+if __name__ == '__main__':
+    main()
