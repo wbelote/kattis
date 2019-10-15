@@ -1,3 +1,4 @@
+import bisect
 import sys
 
 
@@ -7,8 +8,10 @@ def dist(a, b):
     return (dx ** 2 + dy ** 2) ** 0.5
 
 
-def time(a, b):
+def time(a, b, start_id):
     d = dist(a, b)
+    if start_id == 0:
+        return d / 5
     if d <= 30:
         return d / 5
     return 2 + abs(50 - d) / 5
@@ -23,25 +26,27 @@ def main():
 
     # get list of cannon positions
     n = int(sys.stdin.readline())
-    cannons = []
+    cannons = [a]
     for i in range(n):
         line = sys.stdin.readline().split()
         cannons.append([float(x) for x in line])
     cannons.append(b)
 
     # Dijkstra
-    dists = [time(a, c) for c in cannons] + [time(a, b)]
-    unseen = list(range(n + 1))
+    frontier = [[0, 0]]
+    seen = set()
     while True:
-        new = dists.index(min(dists))
-        if new == n:
-            print(dists[n])
+        new = frontier.pop(0)
+        if new[1] == n + 1:
+            print(new[0])
             return
-        unseen.remove(new)
-        for loc in unseen:
-            t = time(cannons[new], cannons[loc])
-            if dists[new] + t < dists[loc]:
-                dists[loc] = t
+        if new[1] in seen:
+            continue
+        seen.add(new[1])
+        for loc in range(1, n + 2):
+            if loc not in seen:
+                t = time(cannons[new[1]], cannons[loc], new[1])
+                bisect.insort(frontier, [new[0] + t, loc])
 
 
 if __name__ == '__main__':
