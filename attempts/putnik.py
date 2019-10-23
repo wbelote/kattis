@@ -1,3 +1,10 @@
+"""
+Builds path from inside out by doing a weighted breadth-first search, similar to Dijkstra's algorithm.
+It times out on test case 6, and I can't think of an algorithm for this that's better than exponential time.
+I tried a greedy version where it took the best local option rather than adding both to a priority queue,
+but that gave a wrong answer as the optimal path may not always be locally optimal.
+"""
+
 import bisect
 import sys
 
