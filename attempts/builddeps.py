@@ -3,35 +3,56 @@ import sys
 
 def main():
     n = int(sys.stdin.readline())
-    children = {}
-    parents = {}
-    compiled = set()
+    lines = []
+    files = []
+    compiled = []
     for i in range(n):
         line = sys.stdin.readline().split()
         child = line[0][:-1]
-        parents[child] = line[1:]
-        if not parents[child]:
-            compiled.add(child)
-        for file in line[1:]:
-            if file in children:
-                children[file] += [child]
-            else:
-                children[file] = [child]
+        if not line[1:]:
+            compiled.append(child)
+        lines.append(line[1:])
+        files.append(child)
 
-    queue = [sys.stdin.readline().rstrip()]
-    compiled.remove(queue[0])
+    needs = {h: {g: 0 for g in files} for h in files}
+    for i in range(n):
+        needs[files[i]]["total"] = len(lines[i])
+        for p in lines[i]:
+            needs[files[i]][p] = 1
+
+    first = sys.stdin.readline().strip()
+    compiled.remove(first)
+    for c in compiled:
+        del needs[c]
+        files.remove(c)
+        for f in files:
+            needs[f]["total"] -= needs[f][c]
+            del needs[f][c]
+    queue = [first]
     while queue:
-        item = queue.pop(0)
-        if item in compiled:
+        new = queue.pop(0)
+        if new not in needs:
+            print(new)
             continue
-        if not set(parents[item]) <= compiled:
-            queue.append(item)
+        if needs[new]["total"]:
+            queue.append(new)
             continue
-        else:
-            compiled.add(item)
-            print(item)
-            if item in children:
-                queue += children[item]
+        # go to compile new
+        print(new)
+        files.remove(new)
+        for f in files:
+            if needs[new][f] or not needs[f]["total"]:
+                del needs[f]
+                files.remove(f)
+                for g in files:
+                    needs[g]["total"] -= needs[g][f]
+                    del needs[g][f]
+                continue
+            elif needs[f][new]:
+                queue.append(f)
+            needs[f]["total"] -= needs[f][new]
+            del needs[f][new]
+        del needs[new]
 
 
 if __name__ == '__main__':
